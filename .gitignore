@@ -1,0 +1,5 @@
+tmux-mcp
+go.sum
+.env
+.env.*
+.envrc
