@@ -608,7 +608,12 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 // ---------------------------------------------------------------------------
 
 func main() {
-	reg := registry.NewToolRegistry()
+	reg := registry.NewToolRegistry(registry.Config{
+		Middleware: []registry.Middleware{
+			registry.AuditMiddleware(""),
+			registry.SafetyTierMiddleware(),
+		},
+	})
 	reg.RegisterModule(&TmuxModule{})
 
 	s := registry.NewMCPServer("tmux-mcp", "1.0.0")
