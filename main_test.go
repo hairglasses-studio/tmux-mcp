@@ -6,7 +6,9 @@ import (
 	"fmt"
 	"math/rand"
 	"os/exec"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/hairglasses-studio/mcpkit/mcptest"
 	"github.com/hairglasses-studio/mcpkit/registry"
@@ -19,8 +21,8 @@ import (
 func TestModuleRegistration(t *testing.T) {
 	m := &TmuxModule{}
 	tools := m.Tools()
-	if len(tools) != 9 {
-		t.Fatalf("expected 9 tools, got %d", len(tools))
+	if len(tools) != 11 {
+		t.Fatalf("expected 11 tools, got %d", len(tools))
 	}
 
 	reg := registry.NewToolRegistry()
@@ -28,15 +30,15 @@ func TestModuleRegistration(t *testing.T) {
 	srv := mcptest.NewServer(t, reg)
 
 	names := srv.ToolNames()
-	if len(names) != 9 {
-		t.Fatalf("expected 9 registered tools, got %d", len(names))
+	if len(names) != 11 {
+		t.Fatalf("expected 11 registered tools, got %d", len(names))
 	}
 
 	for _, want := range []string{
 		"tmux_list_sessions", "tmux_new_session", "tmux_kill_session",
 		"tmux_list_windows", "tmux_new_window",
 		"tmux_list_panes", "tmux_capture_pane", "tmux_send_keys",
-		"tmux_workspace",
+		"tmux_workspace", "tmux_wait_for_text", "tmux_search_panes",
 	} {
 		if !srv.HasTool(want) {
 			t.Errorf("missing tool: %s", want)
@@ -415,5 +417,184 @@ func unmarshalResult(t *testing.T, result *registry.CallToolResult, out any) {
 	text := extractText(t, result)
 	if err := json.Unmarshal([]byte(text), out); err != nil {
 		t.Fatalf("unmarshal error: %v; text=%s", err, text)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// Safety tier metadata
+// ---------------------------------------------------------------------------
+
+func TestSafetyTiers(t *testing.T) {
+	m := &TmuxModule{}
+	tools := m.Tools()
+
+	tierMap := make(map[string]registry.ToolDefinition)
+	for _, td := range tools {
+		tierMap[td.Tool.Name] = td
+	}
+
+	readOnly := []string{
+		"tmux_list_sessions", "tmux_list_windows", "tmux_list_panes",
+		"tmux_capture_pane", "tmux_wait_for_text", "tmux_search_panes",
+	}
+	for _, name := range readOnly {
+		td, ok := tierMap[name]
+		if !ok {
+			t.Errorf("tool %q not found", name)
+			continue
+		}
+		if td.IsWrite {
+			t.Errorf("%s: expected IsWrite=false, got true", name)
+		}
+	}
+
+	writable := []string{
+		"tmux_send_keys", "tmux_new_session", "tmux_new_window",
+		"tmux_kill_session", "tmux_workspace",
+	}
+	for _, name := range writable {
+		td, ok := tierMap[name]
+		if !ok {
+			t.Errorf("tool %q not found", name)
+			continue
+		}
+		if !td.IsWrite {
+			t.Errorf("%s: expected IsWrite=true, got false", name)
+		}
+	}
+
+	// kill_session should be complex
+	if td, ok := tierMap["tmux_kill_session"]; ok {
+		if td.Complexity != registry.ComplexityComplex {
+			t.Errorf("tmux_kill_session: expected Complexity=%q, got %q",
+				registry.ComplexityComplex, td.Complexity)
+		}
+	}
+}
+
+// ---------------------------------------------------------------------------
+// tmux_wait_for_text
+// ---------------------------------------------------------------------------
+
+func TestWaitForText_MissingText(t *testing.T) {
+	td := findTool(t, "tmux_wait_for_text")
+	req := makeReq(map[string]any{"session_name": "test", "text": ""})
+	result, err := td.Handler(context.Background(), req)
+	if err == nil && (result == nil || !result.IsError) {
+		t.Fatal("expected error for empty text")
+	}
+}
+
+func TestWaitForText_Found(t *testing.T) {
+	requireTmux(t)
+
+	sessName := fmt.Sprintf("test-wait-%d", rand.Intn(100000))
+	newTd := findTool(t, "tmux_new_session")
+	_, err := newTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+	if err != nil {
+		t.Skipf("could not create session: %v", err)
+	}
+	defer func() {
+		killTd := findTool(t, "tmux_kill_session")
+		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+	}()
+
+	// Send text then wait for it — use a single send_keys with Enter included
+	sendTd := findTool(t, "tmux_send_keys")
+	sendTd.Handler(context.Background(), makeReq(map[string]any{
+		"session": sessName,
+		"keys":    "echo MARKER_FOUND_XYZ",
+	}))
+	sendTd.Handler(context.Background(), makeReq(map[string]any{
+		"session": sessName,
+		"keys":    "Enter",
+	}))
+
+	// Give tmux time to execute the command
+	time.Sleep(500 * time.Millisecond)
+
+	td := findTool(t, "tmux_wait_for_text")
+	result, err := td.Handler(context.Background(), makeReq(map[string]any{
+		"session_name": sessName,
+		"text":         "MARKER_FOUND_XYZ",
+		"timeout_secs": 10,
+	}))
+	if err != nil {
+		t.Fatalf("wait_for_text error: %v", err)
+	}
+	if result.IsError {
+		t.Fatalf("wait_for_text returned error: %s", extractText(t, result))
+	}
+	var out WaitForTextOutput
+	unmarshalResult(t, result, &out)
+	if !out.Found {
+		t.Error("expected found=true")
+	}
+	if !strings.Contains(out.MatchingLine, "MARKER_FOUND_XYZ") {
+		t.Errorf("matching line should contain marker, got %q", out.MatchingLine)
+	}
+}
+
+// ---------------------------------------------------------------------------
+// tmux_search_panes
+// ---------------------------------------------------------------------------
+
+func TestSearchPanes_MissingSession(t *testing.T) {
+	td := findTool(t, "tmux_search_panes")
+	req := makeReq(map[string]any{"session_name": "", "pattern": "test"})
+	result, err := td.Handler(context.Background(), req)
+	if err == nil && (result == nil || !result.IsError) {
+		t.Fatal("expected error for empty session_name")
+	}
+}
+
+func TestSearchPanes_InvalidRegex(t *testing.T) {
+	td := findTool(t, "tmux_search_panes")
+	req := makeReq(map[string]any{"session_name": "test", "pattern": "[invalid"})
+	result, err := td.Handler(context.Background(), req)
+	if err == nil && (result == nil || !result.IsError) {
+		t.Fatal("expected error for invalid regex")
+	}
+}
+
+func TestSearchPanes_Found(t *testing.T) {
+	requireTmux(t)
+
+	sessName := fmt.Sprintf("test-search-%d", rand.Intn(100000))
+	newTd := findTool(t, "tmux_new_session")
+	_, err := newTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+	if err != nil {
+		t.Skipf("could not create session: %v", err)
+	}
+	defer func() {
+		killTd := findTool(t, "tmux_kill_session")
+		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+	}()
+
+	// Send identifiable text
+	sendTd := findTool(t, "tmux_send_keys")
+	sendTd.Handler(context.Background(), makeReq(map[string]any{
+		"session": sessName,
+		"keys":    "echo SEARCH_MARKER_ABC123",
+	}))
+	sendTd.Handler(context.Background(), makeReq(map[string]any{
+		"session": sessName,
+		"keys":    "Enter",
+	}))
+
+	time.Sleep(200 * time.Millisecond)
+
+	td := findTool(t, "tmux_search_panes")
+	result, err := td.Handler(context.Background(), makeReq(map[string]any{
+		"session_name": sessName,
+		"pattern":      "SEARCH_MARKER_ABC123",
+	}))
+	if err != nil {
+		t.Fatalf("search_panes error: %v", err)
+	}
+	var out SearchPanesOutput
+	unmarshalResult(t, result, &out)
+	if len(out.Matches) == 0 {
+		t.Error("expected at least one match")
 	}
 }
