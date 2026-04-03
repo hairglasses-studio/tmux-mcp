@@ -532,11 +532,16 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 				timeout = 30
 			}
 
-			target := tmuxTarget(
-				input.SessionName,
-				strconv.Itoa(input.WindowIndex),
-				strconv.Itoa(input.PaneIndex),
-			)
+			// Build target: only include window/pane if explicitly set (non-zero)
+			winStr := ""
+			if input.WindowIndex != 0 {
+				winStr = strconv.Itoa(input.WindowIndex)
+			}
+			paneStr := ""
+			if input.PaneIndex != 0 {
+				paneStr = strconv.Itoa(input.PaneIndex)
+			}
+			target := tmuxTarget(input.SessionName, winStr, paneStr)
 
 			deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 			ticker := time.NewTicker(500 * time.Millisecond)
