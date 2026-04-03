@@ -187,6 +187,33 @@ type KillSessionOutput struct {
 }
 
 // ---------------------------------------------------------------------------
+// tmux_workspace (composed)
+// ---------------------------------------------------------------------------
+
+type WorkspacePane struct {
+	Command string `json:"command,omitempty" jsonschema:"description=Command to run in this pane"`
+	Dir     string `json:"dir,omitempty" jsonschema:"description=Working directory for this pane"`
+}
+
+type WorkspaceWindow struct {
+	Name   string          `json:"name,omitempty" jsonschema:"description=Window name"`
+	Layout string          `json:"layout,omitempty" jsonschema:"description=Tmux layout: tiled\\, even-horizontal\\, even-vertical\\, main-horizontal\\, main-vertical"`
+	Panes  []WorkspacePane `json:"panes,omitempty" jsonschema:"description=Panes in this window"`
+}
+
+type WorkspaceInput struct {
+	Session string            `json:"session" jsonschema:"required,description=Session name"`
+	Dir     string            `json:"dir,omitempty" jsonschema:"description=Base working directory for all panes"`
+	Windows []WorkspaceWindow `json:"windows" jsonschema:"required,description=Windows to create"`
+}
+
+type WorkspaceOutput struct {
+	Session      string `json:"session"`
+	WindowCount  int    `json:"windows_created"`
+	PaneCount    int    `json:"panes_created"`
+}
+
+// ---------------------------------------------------------------------------
 // TmuxModule
 // ---------------------------------------------------------------------------
 
@@ -439,6 +466,137 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 				return KillSessionOutput{
 					Session: input.Name,
 					Killed:  true,
+				}, nil
+			},
+		),
+
+		// ---------------------------------------------------------------
+		// tmux_workspace (composed)
+		// ---------------------------------------------------------------
+		handler.TypedHandler[WorkspaceInput, WorkspaceOutput](
+			"tmux_workspace",
+			"Create a multi-window, multi-pane tmux workspace from a declarative spec. Single tool replaces new_session + new_window + send_keys sequences.",
+			func(_ context.Context, input WorkspaceInput) (WorkspaceOutput, error) {
+				if input.Session == "" {
+					return WorkspaceOutput{}, fmt.Errorf("[%s] session name is required", handler.ErrInvalidParam)
+				}
+				if len(input.Windows) == 0 {
+					return WorkspaceOutput{}, fmt.Errorf("[%s] at least one window is required", handler.ErrInvalidParam)
+				}
+
+				baseDir := input.Dir
+				totalPanes := 0
+
+				// Create session with first window's first pane
+				firstWin := input.Windows[0]
+				sessionArgs := []string{"new-session", "-d", "-s", input.Session}
+				if firstWin.Name != "" {
+					sessionArgs = append(sessionArgs, "-n", firstWin.Name)
+				}
+
+				// Determine directory for first pane
+				firstDir := baseDir
+				if len(firstWin.Panes) > 0 && firstWin.Panes[0].Dir != "" {
+					firstDir = firstWin.Panes[0].Dir
+				}
+				if firstDir != "" {
+					sessionArgs = append(sessionArgs, "-c", firstDir)
+				}
+
+				_, err := runTmux(sessionArgs...)
+				if err != nil {
+					return WorkspaceOutput{}, fmt.Errorf("[%s] create session: %w", handler.ErrAPIError, err)
+				}
+				totalPanes++
+
+				// Send command to first pane if specified
+				if len(firstWin.Panes) > 0 && firstWin.Panes[0].Command != "" {
+					runTmux("send-keys", "-t", input.Session, firstWin.Panes[0].Command, "Enter")
+				}
+
+				// Add remaining panes to first window
+				for i := 1; i < len(firstWin.Panes); i++ {
+					pane := firstWin.Panes[i]
+					splitArgs := []string{"split-window", "-t", input.Session}
+					paneDir := pane.Dir
+					if paneDir == "" {
+						paneDir = baseDir
+					}
+					if paneDir != "" {
+						splitArgs = append(splitArgs, "-c", paneDir)
+					}
+					runTmux(splitArgs...)
+					totalPanes++
+
+					if pane.Command != "" {
+						runTmux("send-keys", "-t", input.Session, pane.Command, "Enter")
+					}
+				}
+
+				// Apply layout to first window
+				if firstWin.Layout != "" {
+					runTmux("select-layout", "-t", input.Session, firstWin.Layout)
+				}
+
+				// Create additional windows
+				for w := 1; w < len(input.Windows); w++ {
+					win := input.Windows[w]
+					winArgs := []string{"new-window", "-t", input.Session}
+					if win.Name != "" {
+						winArgs = append(winArgs, "-n", win.Name)
+					}
+
+					// First pane directory
+					winDir := baseDir
+					if len(win.Panes) > 0 && win.Panes[0].Dir != "" {
+						winDir = win.Panes[0].Dir
+					}
+					if winDir != "" {
+						winArgs = append(winArgs, "-c", winDir)
+					}
+
+					runTmux(winArgs...)
+					totalPanes++
+
+					// Send command to first pane
+					if len(win.Panes) > 0 && win.Panes[0].Command != "" {
+						target := input.Session + ":" + strconv.Itoa(w)
+						runTmux("send-keys", "-t", target, win.Panes[0].Command, "Enter")
+					}
+
+					// Additional panes
+					for i := 1; i < len(win.Panes); i++ {
+						pane := win.Panes[i]
+						splitArgs := []string{"split-window", "-t", input.Session + ":" + strconv.Itoa(w)}
+						paneDir := pane.Dir
+						if paneDir == "" {
+							paneDir = baseDir
+						}
+						if paneDir != "" {
+							splitArgs = append(splitArgs, "-c", paneDir)
+						}
+						runTmux(splitArgs...)
+						totalPanes++
+
+						if pane.Command != "" {
+							target := input.Session + ":" + strconv.Itoa(w)
+							runTmux("send-keys", "-t", target, pane.Command, "Enter")
+						}
+					}
+
+					// Apply layout
+					if win.Layout != "" {
+						runTmux("select-layout", "-t", input.Session+":"+strconv.Itoa(w), win.Layout)
+					}
+				}
+
+				// Select first window
+				runTmux("select-window", "-t", input.Session+":0")
+
+				return WorkspaceOutput{
+					Session:     input.Session,
+					WindowCount: len(input.Windows),
+					PaneCount:   totalPanes,
 				}, nil
 			},
 		),

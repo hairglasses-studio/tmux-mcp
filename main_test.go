@@ -19,8 +19,8 @@ import (
 func TestModuleRegistration(t *testing.T) {
 	m := &TmuxModule{}
 	tools := m.Tools()
-	if len(tools) != 8 {
-		t.Fatalf("expected 8 tools, got %d", len(tools))
+	if len(tools) != 9 {
+		t.Fatalf("expected 9 tools, got %d", len(tools))
 	}
 
 	reg := registry.NewToolRegistry()
@@ -28,14 +28,15 @@ func TestModuleRegistration(t *testing.T) {
 	srv := mcptest.NewServer(t, reg)
 
 	names := srv.ToolNames()
-	if len(names) != 8 {
-		t.Fatalf("expected 8 registered tools, got %d", len(names))
+	if len(names) != 9 {
+		t.Fatalf("expected 9 registered tools, got %d", len(names))
 	}
 
 	for _, want := range []string{
 		"tmux_list_sessions", "tmux_new_session", "tmux_kill_session",
 		"tmux_list_windows", "tmux_new_window",
 		"tmux_list_panes", "tmux_capture_pane", "tmux_send_keys",
+		"tmux_workspace",
 	} {
 		if !srv.HasTool(want) {
 			t.Errorf("missing tool: %s", want)
@@ -291,6 +292,78 @@ func TestCapturePane_DefaultLines(t *testing.T) {
 	var out CaptureOutput
 	unmarshalResult(t, result, &out)
 	// Should have captured something (default 50 lines)
+}
+
+// ---------------------------------------------------------------------------
+// tmux_workspace (composed)
+// ---------------------------------------------------------------------------
+
+func TestWorkspace_EmptySession(t *testing.T) {
+	td := findTool(t, "tmux_workspace")
+	req := makeReq(map[string]any{"session": "", "windows": []any{}})
+	result, err := td.Handler(context.Background(), req)
+	if err == nil && (result == nil || !result.IsError) {
+		t.Fatal("expected error for empty session")
+	}
+}
+
+func TestWorkspace_NoWindows(t *testing.T) {
+	td := findTool(t, "tmux_workspace")
+	req := makeReq(map[string]any{"session": "test", "windows": []any{}})
+	result, err := td.Handler(context.Background(), req)
+	if err == nil && (result == nil || !result.IsError) {
+		t.Fatal("expected error for no windows")
+	}
+}
+
+func TestWorkspace_MultiPane(t *testing.T) {
+	requireTmux(t)
+
+	sessName := fmt.Sprintf("test-ws-%d", rand.Intn(100000))
+	td := findTool(t, "tmux_workspace")
+
+	req := makeReq(map[string]any{
+		"session": sessName,
+		"dir":     "/tmp",
+		"windows": []any{
+			map[string]any{
+				"name":   "editor",
+				"layout": "even-horizontal",
+				"panes": []any{
+					map[string]any{"command": "echo pane1"},
+					map[string]any{"command": "echo pane2"},
+				},
+			},
+			map[string]any{
+				"name": "logs",
+				"panes": []any{
+					map[string]any{"command": "echo logs"},
+				},
+			},
+		},
+	})
+
+	result, err := td.Handler(context.Background(), req)
+	if err != nil {
+		t.Fatalf("workspace error: %v", err)
+	}
+
+	defer func() {
+		killTd := findTool(t, "tmux_kill_session")
+		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+	}()
+
+	var out WorkspaceOutput
+	unmarshalResult(t, result, &out)
+	if out.Session != sessName {
+		t.Errorf("expected session=%q, got %q", sessName, out.Session)
+	}
+	if out.WindowCount != 2 {
+		t.Errorf("expected 2 windows, got %d", out.WindowCount)
+	}
+	if out.PaneCount != 3 {
+		t.Errorf("expected 3 panes, got %d", out.PaneCount)
+	}
 }
 
 // ---------------------------------------------------------------------------
