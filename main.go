@@ -10,7 +10,8 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
+	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
@@ -825,6 +826,10 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 // ---------------------------------------------------------------------------
 
 func main() {
+	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
+		Level: slog.LevelInfo,
+	})).With("service", "tmux-mcp"))
+
 	reg := registry.NewToolRegistry(registry.Config{
 		Middleware: []registry.Middleware{
 			registry.AuditMiddleware(""),
@@ -839,6 +844,7 @@ func main() {
 	buildTmuxPromptRegistry().RegisterWithServer(s)
 
 	if err := registry.ServeAuto(s); err != nil {
-		log.Fatal(err)
+		slog.Error("server stopped", "error", err)
+		os.Exit(1)
 	}
 }
