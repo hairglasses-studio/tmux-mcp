@@ -2,6 +2,7 @@
 
 [![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Glama](https://glama.ai/mcp/servers/hairglasses-studio/tmux-mcp/badges/score.svg)](https://glama.ai/mcp/servers/hairglasses-studio/tmux-mcp)
 
 MCP server for tmux session, window, and pane management. Gives AI assistants the ability to create terminal workspaces, send commands, and capture output — including a declarative workspace tool that sets up multi-pane layouts in a single call.
 
