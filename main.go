@@ -191,7 +191,7 @@ type KillSessionOutput struct {
 // --- wait_for_text ---
 
 type WaitForTextInput struct {
-	SessionName string `json:"session_name" jsonschema:"required,description=tmux session name"`
+	Session     string `json:"session" jsonschema:"required,description=tmux session name"`
 	WindowIndex int    `json:"window_index,omitempty" jsonschema:"description=window index (default 0)"`
 	PaneIndex   int    `json:"pane_index,omitempty" jsonschema:"description=pane index (default 0)"`
 	Text        string `json:"text" jsonschema:"required,description=substring to wait for"`
@@ -207,8 +207,8 @@ type WaitForTextOutput struct {
 // --- search_panes ---
 
 type SearchPanesInput struct {
-	SessionName string `json:"session_name" jsonschema:"required,description=tmux session name"`
-	Pattern     string `json:"pattern" jsonschema:"required,description=regex pattern to search for"`
+	Session string `json:"session" jsonschema:"required,description=tmux session name"`
+	Pattern string `json:"pattern" jsonschema:"required,description=regex pattern to search for"`
 }
 
 type PaneMatch struct {
@@ -543,7 +543,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			if input.PaneIndex != 0 {
 				paneStr = strconv.Itoa(input.PaneIndex)
 			}
-			target := tmuxTarget(input.SessionName, winStr, paneStr)
+			target := tmuxTarget(input.Session, winStr, paneStr)
 
 			deadline := time.Now().Add(time.Duration(timeout) * time.Second)
 			ticker := time.NewTicker(500 * time.Millisecond)
@@ -589,8 +589,8 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 		"tmux_search_panes",
 		"Search across all panes in a session for a regex pattern. Returns matching lines with window/pane indices.",
 		func(_ context.Context, input SearchPanesInput) (SearchPanesOutput, error) {
-			if input.SessionName == "" {
-				return SearchPanesOutput{}, fmt.Errorf("[%s] session_name is required", handler.ErrInvalidParam)
+			if input.Session == "" {
+				return SearchPanesOutput{}, fmt.Errorf("[%s] session is required", handler.ErrInvalidParam)
 			}
 
 			re, err := regexp.Compile(input.Pattern)
@@ -599,11 +599,11 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 
 			// List all windows in the session
-			winOut, err := runTmux("list-windows", "-t", input.SessionName, "-F",
+			winOut, err := runTmux("list-windows", "-t", input.Session, "-F",
 				"#{window_index}\t#{window_name}")
 			if err != nil {
 				if isNoServer(err) {
-					return SearchPanesOutput{Session: input.SessionName, Pattern: input.Pattern, Matches: []PaneMatch{}}, nil
+					return SearchPanesOutput{Session: input.Session, Pattern: input.Pattern, Matches: []PaneMatch{}}, nil
 				}
 				return SearchPanesOutput{}, fmt.Errorf("[%s] list windows: %w", handler.ErrNotFound, err)
 			}
@@ -623,7 +623,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 
 				// List panes in this window
 				paneOut, err := runTmux("list-panes", "-t",
-					fmt.Sprintf("%s:%d", input.SessionName, winIdx), "-F", "#{pane_index}")
+					fmt.Sprintf("%s:%d", input.Session, winIdx), "-F", "#{pane_index}")
 				if err != nil {
 					continue
 				}
@@ -635,7 +635,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 					paneIdx, _ := strconv.Atoi(strings.TrimSpace(paneLine))
 
 					// Capture pane content
-					target := fmt.Sprintf("%s:%d.%d", input.SessionName, winIdx, paneIdx)
+					target := fmt.Sprintf("%s:%d.%d", input.Session, winIdx, paneIdx)
 					content, err := runTmux("capture-pane", "-p", "-t", target)
 					if err != nil {
 						continue
@@ -664,7 +664,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 
 			return SearchPanesOutput{
-				Session: input.SessionName,
+				Session: input.Session,
 				Pattern: input.Pattern,
 				Matches: matches,
 			}, nil

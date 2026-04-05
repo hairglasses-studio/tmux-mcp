@@ -487,7 +487,7 @@ func TestSafetyTiers(t *testing.T) {
 
 func TestWaitForText_MissingText(t *testing.T) {
 	td := findTool(t, "tmux_wait_for_text")
-	req := makeReq(map[string]any{"session_name": "test", "text": ""})
+	req := makeReq(map[string]any{"session": "test", "text": ""})
 	result, err := td.Handler(context.Background(), req)
 	if err == nil && (result == nil || !result.IsError) {
 		t.Fatal("expected error for empty text")
@@ -524,7 +524,7 @@ func TestWaitForText_Found(t *testing.T) {
 
 	td := findTool(t, "tmux_wait_for_text")
 	result, err := td.Handler(context.Background(), makeReq(map[string]any{
-		"session_name": sessName,
+		"session":      sessName,
 		"text":         "MARKER_FOUND_XYZ",
 		"timeout_secs": 10,
 	}))
@@ -550,16 +550,16 @@ func TestWaitForText_Found(t *testing.T) {
 
 func TestSearchPanes_MissingSession(t *testing.T) {
 	td := findTool(t, "tmux_search_panes")
-	req := makeReq(map[string]any{"session_name": "", "pattern": "test"})
+	req := makeReq(map[string]any{"session": "", "pattern": "test"})
 	result, err := td.Handler(context.Background(), req)
 	if err == nil && (result == nil || !result.IsError) {
-		t.Fatal("expected error for empty session_name")
+		t.Fatal("expected error for empty session")
 	}
 }
 
 func TestSearchPanes_InvalidRegex(t *testing.T) {
 	td := findTool(t, "tmux_search_panes")
-	req := makeReq(map[string]any{"session_name": "test", "pattern": "[invalid"})
+	req := makeReq(map[string]any{"session": "test", "pattern": "[invalid"})
 	result, err := td.Handler(context.Background(), req)
 	if err == nil && (result == nil || !result.IsError) {
 		t.Fatal("expected error for invalid regex")
@@ -595,8 +595,8 @@ func TestSearchPanes_Found(t *testing.T) {
 
 	td := findTool(t, "tmux_search_panes")
 	result, err := td.Handler(context.Background(), makeReq(map[string]any{
-		"session_name": sessName,
-		"pattern":      "SEARCH_MARKER_ABC123",
+		"session": sessName,
+		"pattern": "SEARCH_MARKER_ABC123",
 	}))
 	if err != nil {
 		t.Fatalf("search_panes error: %v", err)
