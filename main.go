@@ -278,7 +278,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 
 			var sessions []sessionInfo
-			for _, line := range strings.Split(out, "\n") {
+			for line := range strings.SplitSeq(out, "\n") {
 				if line == "" {
 					continue
 				}
@@ -320,7 +320,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 
 			var windows []windowInfo
-			for _, line := range strings.Split(out, "\n") {
+			for line := range strings.SplitSeq(out, "\n") {
 				if line == "" {
 					continue
 				}
@@ -368,7 +368,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 
 			var panes []paneInfo
-			for _, line := range strings.Split(out, "\n") {
+			for line := range strings.SplitSeq(out, "\n") {
 				if line == "" {
 					continue
 				}
@@ -554,7 +554,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			for {
 				out, err := runTmux("capture-pane", "-p", "-t", target)
 				if err == nil {
-					for _, line := range strings.Split(out, "\n") {
+					for line := range strings.SplitSeq(out, "\n") {
 						if strings.Contains(line, input.Text) {
 							return WaitForTextOutput{
 								Found:        true,
@@ -610,7 +610,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 
 			var matches []PaneMatch
 
-			for _, winLine := range strings.Split(winOut, "\n") {
+			for winLine := range strings.SplitSeq(winOut, "\n") {
 				if winLine == "" {
 					continue
 				}
@@ -628,7 +628,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 					continue
 				}
 
-				for _, paneLine := range strings.Split(paneOut, "\n") {
+				for paneLine := range strings.SplitSeq(paneOut, "\n") {
 					if paneLine == "" {
 						continue
 					}
@@ -642,7 +642,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 					}
 
 					var matchedLines []string
-					for _, line := range strings.Split(content, "\n") {
+					for line := range strings.SplitSeq(content, "\n") {
 						if re.MatchString(line) {
 							matchedLines = append(matchedLines, line)
 						}
