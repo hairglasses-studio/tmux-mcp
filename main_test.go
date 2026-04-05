@@ -46,6 +46,15 @@ func TestModuleRegistration(t *testing.T) {
 	}
 }
 
+func TestContextRegistries(t *testing.T) {
+	if got := buildTmuxResourceRegistry().ResourceCount(); got != 1 {
+		t.Fatalf("expected 1 tmux resource, got %d", got)
+	}
+	if got := buildTmuxPromptRegistry().PromptCount(); got != 1 {
+		t.Fatalf("expected 1 tmux prompt, got %d", got)
+	}
+}
+
 // ---------------------------------------------------------------------------
 // Helper unit tests
 // ---------------------------------------------------------------------------

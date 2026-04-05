@@ -23,7 +23,7 @@ go build -o tmux-mcp .
 
 ## Configure
 
-Add to your Claude Code MCP config (`.mcp.json`):
+Add to your MCP client config (for example Codex or Claude Code):
 
 ```json
 {
