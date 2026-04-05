@@ -435,8 +435,10 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 		"Send keystrokes to a tmux pane. Keys can be literal text or tmux key names like Enter, C-c, etc.",
 		func(_ context.Context, input SendKeysInput) (SendKeysOutput, error) {
 			target := tmuxTarget(input.Session, input.Window, input.Pane)
+			slog.Info("sending keys", "target", target, "keys", input.Keys)
 			_, err := runTmux("send-keys", "-t", target, input.Keys)
 			if err != nil {
+				slog.Error("send keys failed", "target", target, "error", err)
 				return SendKeysOutput{}, fmt.Errorf("[%s] send keys: %w", handler.ErrNotFound, err)
 			}
 			return SendKeysOutput{
@@ -454,6 +456,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 		"tmux_new_session",
 		"Create a new detached tmux session with optional working directory and initial command.",
 		func(_ context.Context, input NewSessionInput) (NewSessionOutput, error) {
+			slog.Info("creating session", "session", input.Name, "directory", input.Directory)
 			args := []string{"new-session", "-d", "-s", input.Name}
 			if input.Directory != "" {
 				args = append(args, "-c", input.Directory)
@@ -463,8 +466,10 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 			_, err := runTmux(args...)
 			if err != nil {
+				slog.Error("session creation failed", "session", input.Name, "error", err)
 				return NewSessionOutput{}, fmt.Errorf("[%s] new session: %w", handler.ErrAPIError, err)
 			}
+			slog.Info("session created", "session", input.Name)
 			return NewSessionOutput{
 				Session: input.Name,
 				Created: true,
@@ -506,10 +511,13 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 		"tmux_kill_session",
 		"Kill a tmux session by name.",
 		func(_ context.Context, input KillSessionInput) (KillSessionOutput, error) {
+			slog.Info("killing session", "session", input.Name)
 			_, err := runTmux("kill-session", "-t", input.Name)
 			if err != nil {
+				slog.Error("session kill failed", "session", input.Name, "error", err)
 				return KillSessionOutput{}, fmt.Errorf("[%s] kill session: %w", handler.ErrNotFound, err)
 			}
+			slog.Info("session killed", "session", input.Name)
 			return KillSessionOutput{
 				Session: input.Name,
 				Killed:  true,
@@ -688,6 +696,8 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 				return WorkspaceOutput{}, fmt.Errorf("[%s] at least one window is required", handler.ErrInvalidParam)
 			}
 
+			slog.Info("creating workspace", "session", input.Session, "windows", len(input.Windows))
+
 			baseDir := input.Dir
 			totalPanes := 0
 
@@ -797,6 +807,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			// Select first window
 			runTmux("select-window", "-t", input.Session+":0")
 
+			slog.Info("workspace created", "session", input.Session, "windows", len(input.Windows), "panes", totalPanes)
 			return WorkspaceOutput{
 				Session:     input.Session,
 				WindowCount: len(input.Windows),
@@ -830,13 +841,17 @@ func main() {
 		Level: slog.LevelInfo,
 	})).With("service", "tmux-mcp"))
 
+	slog.Info("server starting", "name", "tmux-mcp", "version", "1.0.0")
+
 	reg := registry.NewToolRegistry(registry.Config{
 		Middleware: []registry.Middleware{
 			registry.AuditMiddleware(""),
 			registry.SafetyTierMiddleware(),
 		},
 	})
-	reg.RegisterModule(&TmuxModule{})
+	mod := &TmuxModule{}
+	reg.RegisterModule(mod)
+	slog.Info("tools registered", "module", mod.Name(), "count", len(mod.Tools()))
 
 	s := registry.NewMCPServer("tmux-mcp", "1.0.0")
 	reg.RegisterWithServer(s)
