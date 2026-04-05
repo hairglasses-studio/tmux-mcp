@@ -1,0 +1,30 @@
+{
+  "name": "io.github.hairglasses-studio.tmux-mcp",
+  "description": "Tmux terminal multiplexer management with declarative workspace support",
+  "version": "1.1.0",
+  "homepage": "https://github.com/hairglasses-studio/tmux-mcp",
+  "license": "MIT",
+  "organization": "hairglasses-studio",
+  "repository": "https://github.com/hairglasses-studio/tmux-mcp",
+  "transport": ["stdio"],
+  "capabilities": {
+    "tools": true,
+    "resources": false,
+    "prompts": false
+  },
+  "tools": [
+    { "name": "tmux_list_sessions", "description": "List all tmux sessions with window count, creation time, attached status" },
+    { "name": "tmux_new_session", "description": "Create a new detached session with optional start directory and command" },
+    { "name": "tmux_kill_session", "description": "Kill a tmux session by name" },
+    { "name": "tmux_list_windows", "description": "List windows in a session with layout, pane count, active status" },
+    { "name": "tmux_new_window", "description": "Create a new window in a session with optional name and command" },
+    { "name": "tmux_list_panes", "description": "List panes in a session/window with dimensions, command, active status" },
+    { "name": "tmux_capture_pane", "description": "Capture visible text content from a pane (default 50 lines)" },
+    { "name": "tmux_send_keys", "description": "Send keystrokes to a pane (literal text or tmux key names like Enter, C-c)" },
+    { "name": "tmux_workspace", "description": "Create multi-window, multi-pane workspace from declarative spec" }
+  ],
+  "tags": ["terminal", "tmux", "multiplexer", "workspace"],
+  "tool_count": 9,
+  "categories": ["terminal", "multiplexer"],
+  "generated_at": "2026-04-05T00:00:00Z"
+}
