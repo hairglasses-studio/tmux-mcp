@@ -1,4 +1,6 @@
 # tmux-mcp — Agent Instructions
+> Canonical instructions: AGENTS.md
+
 
 MCP server for tmux session, window, and pane management. Built with [mcpkit](https://github.com/hairglasses-studio/mcpkit).
 

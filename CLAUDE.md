@@ -1,5 +1,7 @@
 # tmux-mcp
 
+This repo uses [AGENTS.md](AGENTS.md) as the canonical instruction file.
+
 MCP server for tmux session, window, and pane management. Built with [mcpkit](https://github.com/hairglasses-studio/mcpkit).
 
 ## Build & Test
