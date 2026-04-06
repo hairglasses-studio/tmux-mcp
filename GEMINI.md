@@ -1,12 +1,19 @@
 # tmux-mcp — Gemini CLI Instructions
 
-This repo still keeps its detailed repo guidance in [CLAUDE.md](CLAUDE.md). Read that file before making changes.
+MCP server for tmux session, window, and pane management. Built with [mcpkit](https://github.com/hairglasses-studio/mcpkit).
 
-## Working Rules
+## Build & Test
 
-- Treat [CLAUDE.md](CLAUDE.md) as the source of truth for build, test, architecture, and repo-specific conventions.
-- Keep `GEMINI.md`, [AGENTS.md](AGENTS.md), and [CLAUDE.md](CLAUDE.md) aligned when instructions change.
+```bash
+go build ./...
+go vet ./...
+go test ./... -count=1
+go install .
+```
 
-## Shared Research Repository
+## Key Conventions
 
-Cross-project research lives at `~/hairglasses-studio/docs/` (git: hairglasses-studio/docs). When launching research agents, check existing docs first and write reusable research outputs back to the shared repo rather than local docs/.
+- Graceful handling of "no server running" -- list operations return empty arrays
+- Target strings built as `session:window.pane` with optional window/pane components
+- All sessions created detached (`-d` flag)
+
