@@ -1,0 +1,62 @@
+name: CI Comment
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  test-and-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Run tests with coverage
+        id: test
+        run: |
+          set +e
+          OUTPUT=$(go test ./... -count=1 -coverprofile=coverage.out 2>&1)
+          EXIT_CODE=$?
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          COVERAGE=$(go tool cover -func=coverage.out 2>/dev/null | tail -1 | awk '{print $NF}')
+          echo "coverage=${COVERAGE:-N/A}" >> "$GITHUB_OUTPUT"
+          if [ $EXIT_CODE -eq 0 ]; then
+            echo "status=PASSED" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=FAILED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Run vet
+        id: vet
+        run: |
+          set +e
+          go vet ./... 2>&1
+          if [ $? -eq 0 ]; then
+            echo "status=PASSED" >> "$GITHUB_OUTPUT"
+          else
+            echo "status=FAILED" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Post PR comment
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: ci-results
+          message: |
+            ### CI Results
+
+            | Check | Status |
+            |-------|--------|
+            | Tests | ${{ steps.test.outputs.status == 'PASSED' && '✅ Passed' || '❌ Failed' }} |
+            | Vet | ${{ steps.vet.outputs.status == 'PASSED' && '✅ Passed' || '❌ Failed' }} |
+            | Coverage | ${{ steps.test.outputs.coverage }} |
+
+      - name: Fail if tests failed
+        if: steps.test.outputs.exit_code != '0'
+        run: exit 1
