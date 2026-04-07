@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"math/rand"
-	"os/exec"
 	"testing"
 )
 
@@ -23,7 +22,7 @@ func TestCapture_LineCounts(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	td := findTool(t, "tmux_capture_pane")
@@ -69,7 +68,7 @@ func TestSendKeys_SpecialChars(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	td := findTool(t, "tmux_send_keys")
@@ -142,7 +141,7 @@ func TestWorkspace_ValidLayouts(t *testing.T) {
 
 			defer func() {
 				killTd := findTool(t, "tmux_kill_session")
-				killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+				_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 			}()
 
 			var out WorkspaceOutput
@@ -174,7 +173,7 @@ func TestNewSession_WithDirAndCommand(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	var out NewSessionOutput
@@ -202,7 +201,7 @@ func TestNewWindow_WithNameAndCommand(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	td := findTool(t, "tmux_new_window")
@@ -222,14 +221,3 @@ func TestNewWindow_WithNameAndCommand(t *testing.T) {
 	}
 }
 
-// ---------------------------------------------------------------------------
-// Helper: requireTmux is defined in main_test.go but we redeclare
-// a skip-only version for clarity — Go test uses the one from main_test.go.
-// ---------------------------------------------------------------------------
-
-func requireTmuxBin(t *testing.T) {
-	t.Helper()
-	if _, err := exec.LookPath("tmux"); err != nil {
-		t.Skip("tmux not available")
-	}
-}

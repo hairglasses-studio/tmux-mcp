@@ -1,1 +1,10 @@
-../../dotfiles/make/golangci.yml
+version: "2"
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+run:
+  timeout: 5m

@@ -725,7 +725,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 
 			// Send command to first pane if specified
 			if len(firstWin.Panes) > 0 && firstWin.Panes[0].Command != "" {
-				runTmux("send-keys", "-t", input.Session, firstWin.Panes[0].Command, "Enter")
+				_, _ = runTmux("send-keys", "-t", input.Session, firstWin.Panes[0].Command, "Enter")
 			}
 
 			// Add remaining panes to first window
@@ -739,17 +739,17 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 				if paneDir != "" {
 					splitArgs = append(splitArgs, "-c", paneDir)
 				}
-				runTmux(splitArgs...)
+				_, _ = runTmux(splitArgs...)
 				totalPanes++
 
 				if pane.Command != "" {
-					runTmux("send-keys", "-t", input.Session, pane.Command, "Enter")
+					_, _ = runTmux("send-keys", "-t", input.Session, pane.Command, "Enter")
 				}
 			}
 
 			// Apply layout to first window
 			if firstWin.Layout != "" {
-				runTmux("select-layout", "-t", input.Session, firstWin.Layout)
+				_, _ = runTmux("select-layout", "-t", input.Session, firstWin.Layout)
 			}
 
 			// Create additional windows
@@ -769,13 +769,13 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 					winArgs = append(winArgs, "-c", winDir)
 				}
 
-				runTmux(winArgs...)
+				_, _ = runTmux(winArgs...)
 				totalPanes++
 
 				// Send command to first pane
 				if len(win.Panes) > 0 && win.Panes[0].Command != "" {
 					target := input.Session + ":" + strconv.Itoa(w)
-					runTmux("send-keys", "-t", target, win.Panes[0].Command, "Enter")
+					_, _ = runTmux("send-keys", "-t", target, win.Panes[0].Command, "Enter")
 				}
 
 				// Additional panes
@@ -789,23 +789,23 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 					if paneDir != "" {
 						splitArgs = append(splitArgs, "-c", paneDir)
 					}
-					runTmux(splitArgs...)
+					_, _ = runTmux(splitArgs...)
 					totalPanes++
 
 					if pane.Command != "" {
 						target := input.Session + ":" + strconv.Itoa(w)
-						runTmux("send-keys", "-t", target, pane.Command, "Enter")
+						_, _ = runTmux("send-keys", "-t", target, pane.Command, "Enter")
 					}
 				}
 
 				// Apply layout
 				if win.Layout != "" {
-					runTmux("select-layout", "-t", input.Session+":"+strconv.Itoa(w), win.Layout)
+					_, _ = runTmux("select-layout", "-t", input.Session+":"+strconv.Itoa(w), win.Layout)
 				}
 			}
 
 			// Select first window
-			runTmux("select-window", "-t", input.Session+":0")
+			_, _ = runTmux("select-window", "-t", input.Session+":0")
 
 			slog.Info("workspace created", "session", input.Session, "windows", len(input.Windows), "panes", totalPanes)
 			return WorkspaceOutput{

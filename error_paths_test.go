@@ -43,7 +43,7 @@ func TestNewSession_Duplicate(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	// Try to create a second session with the same name
@@ -150,7 +150,7 @@ func TestWaitForText_ShortTimeout(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	td := findTool(t, "tmux_wait_for_text")
