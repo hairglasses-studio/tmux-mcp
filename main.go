@@ -9,10 +9,8 @@ package main
 import (
 	"bytes"
 	"context"
-	"flag"
 	"fmt"
 	"log/slog"
-	"net/http"
 	"os"
 	"os/exec"
 	"regexp"
@@ -20,7 +18,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/hairglasses-studio/mcpkit/a2a"
 	"github.com/hairglasses-studio/mcpkit/handler"
 	"github.com/hairglasses-studio/mcpkit/registry"
 )
@@ -840,9 +837,6 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 // ---------------------------------------------------------------------------
 
 func main() {
-	a2aPort := flag.Int("a2a-port", 0, "Port to expose the A2A server")
-	flag.Parse()
-
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	})).With("service", "tmux-mcp"))
@@ -864,19 +858,8 @@ func main() {
 	buildTmuxResourceRegistry().RegisterWithServer(s)
 	buildTmuxPromptRegistry().RegisterWithServer(s)
 
-	if *a2aPort > 0 {
-		card := a2a.AgentCardFromRegistry(reg)
-		a2aServer := a2a.NewServer(reg, card)
-		addr := fmt.Sprintf(":%d", *a2aPort)
-		slog.Info("starting a2a server", "addr", addr)
-		if err := http.ListenAndServe(addr, a2aServer.Handler()); err != nil {
-			slog.Error("a2a server failed", "error", err)
-			os.Exit(1)
-		}
-	} else {
-		if err := registry.ServeAuto(s); err != nil {
-			slog.Error("server stopped", "error", err)
-			os.Exit(1)
-		}
+	if err := registry.ServeAuto(s); err != nil {
+		slog.Error("server stopped", "error", err)
+		os.Exit(1)
 	}
 }
