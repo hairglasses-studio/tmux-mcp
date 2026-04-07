@@ -12,7 +12,7 @@ go test ./... -count=1
 go install .
 ```
 
-## Tools (9)
+## Tools (11)
 
 ### Session Management (3)
 - `tmux_list_sessions` -- List all tmux sessions with window count, creation time, attached status
@@ -23,10 +23,12 @@ go install .
 - `tmux_list_windows` -- List windows in a session with layout, pane count, active status
 - `tmux_new_window` -- Create a new window in a session with optional name and command
 
-### Pane Management (3)
+### Pane Management (5)
 - `tmux_list_panes` -- List panes in a session/window with dimensions, command, active status
 - `tmux_capture_pane` -- Capture visible text content from a pane (default 50 lines)
 - `tmux_send_keys` -- Send keystrokes to a pane (literal text or tmux key names like Enter, C-c)
+- `tmux_wait_for_text` -- Poll a pane until specific text appears or timeout
+- `tmux_search_panes` -- Search across all panes in a session for a regex pattern
 
 ### Composed (1)
 - `tmux_workspace` -- **Composed**: create multi-window, multi-pane workspace from declarative spec. Replaces new_session + new_window + send_keys sequences.
