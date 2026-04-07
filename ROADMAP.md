@@ -2,7 +2,7 @@
 
 ## Current State
 
-tmux-mcp provides 9 tools for tmux session, window, and pane management via MCP. Includes a declarative `tmux_workspace` composed tool that creates multi-window, multi-pane layouts in a single call. Graceful handling of no-server-running state. Built on mcpkit with stdio transport.
+tmux-mcp provides 11 tools for tmux session, window, and pane management via MCP. Includes a declarative `tmux_workspace` composed tool that creates multi-window, multi-pane layouts in a single call, plus `tmux_wait_for_text` for polling pane output and `tmux_search_panes` for regex search across panes. Graceful handling of no-server-running state. Built on mcpkit with stdio transport.
 
 All tools functional and tested. MIT licensed, README and CLAUDE.md in place.
 
@@ -18,10 +18,6 @@ All tools functional and tested. MIT licensed, README and CLAUDE.md in place.
 - Named workspace templates (save and recall `tmux_workspace` specs)
 - `tmux_snapshot` — capture current layout as a reusable workspace spec
 - `tmux_workspace` support for split direction (horizontal/vertical) and size ratios
-
-### Phase 3 — Session Intelligence
-- `tmux_search` — search pane contents across all sessions
-- `tmux_wait_for_output` — block until a pane produces matching output (useful for build/test workflows)
 
 ## Future Considerations
 - SSE transport for real-time pane output streaming

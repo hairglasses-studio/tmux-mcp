@@ -1,14 +1,15 @@
 # tmux-mcp
 
-> **Archived** -- This repo has been consolidated into [hairglasses-studio/dotfiles](https://github.com/hairglasses-studio/dotfiles) at `mcp/tmux-mcp/`. For continued updates, use the consolidated version.
+> **Mirror** -- Canonical development lives in [hairglasses-studio/dotfiles](https://github.com/hairglasses-studio/dotfiles) at `mcp/tmux-mcp/`. This repo is a publish mirror kept in parity for `go install` and MCP registry discovery.
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/hairglasses-studio/tmux-mcp.svg)](https://pkg.go.dev/github.com/hairglasses-studio/tmux-mcp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/hairglasses-studio/tmux-mcp)](https://goreportcard.com/report/github.com/hairglasses-studio/tmux-mcp)
+[![CI](https://github.com/hairglasses-studio/tmux-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/hairglasses-studio/tmux-mcp/actions/workflows/ci.yml)
 [![Go](https://img.shields.io/badge/Go-1.26+-00ADD8?logo=go&logoColor=white)](https://go.dev/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Glama](https://glama.ai/mcp/servers/hairglasses-studio/tmux-mcp/badges/score.svg)](https://glama.ai/mcp/servers/hairglasses-studio/tmux-mcp)
 
 MCP server for tmux session, window, and pane management. Gives AI assistants the ability to create terminal workspaces, send commands, and capture output — including a declarative workspace tool that sets up multi-pane layouts in a single call.
-
-Canonical development lives in [`hairglasses-studio/dotfiles`](https://github.com/hairglasses-studio/dotfiles/tree/main/mcp/tmux-mcp) under `dotfiles/mcp/tmux-mcp`. The standalone [`tmux-mcp`](https://github.com/hairglasses-studio/tmux-mcp) repo is a publish mirror kept in parity for installation and discovery.
 
 Built with [mcpkit](https://github.com/hairglasses-studio/mcpkit) using stdio transport.
 
@@ -61,6 +62,8 @@ Add to your MCP client config (for example Codex or Claude Code):
 | `tmux_list_panes` | List panes with dimensions, running command, active status |
 | `tmux_capture_pane` | Capture visible text from a pane (default 50 lines) |
 | `tmux_send_keys` | Send keystrokes (literal text or tmux key names like `Enter`, `C-c`) |
+| `tmux_wait_for_text` | Poll a pane until specific text appears or timeout |
+| `tmux_search_panes` | Search across all panes in a session for a regex pattern |
 
 ### Composed
 | Tool | Description |

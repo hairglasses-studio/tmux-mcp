@@ -11,4 +11,4 @@ jobs:
     uses: hairglasses-studio/.github/.github/workflows/mcp-test.yml@main
     with:
       go-version: "1.26.1"
-      expected-tool-count: 9
+      expected-tool-count: 11
