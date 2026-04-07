@@ -61,6 +61,21 @@ make vet      # go vet ./...
 - Run tests with race detection: `go test ./... -count=1 -race`
 - Integration tests use `mcptest.NewServer()`; unit tests use stdlib `testing`.
 
+## Branch Naming
+
+Use `type/short-description`:
+
+| Prefix | Use for |
+|--------|---------|
+| `feat/` | New features |
+| `fix/` | Bug fixes |
+| `docs/` | Documentation changes |
+| `test/` | Test additions or improvements |
+| `refactor/` | Code restructuring without behavior changes |
+| `chore/` | Dependency updates, CI, tooling |
+
+Examples: `feat/pane-resize`, `fix/session-list-empty`, `docs/workspace-examples`
+
 ## Commit Messages
 
 Use conventional-style prefixes:
@@ -71,6 +86,21 @@ fix: handle detached session edge case
 docs: document pane capture options
 test: add tests for window creation
 ```
+
+## Review Timeline
+
+| Priority | First response |
+|----------|---------------|
+| P0 (security/production) | 4 hours |
+| P1 (blocking bug) | 24 hours |
+| P2 (feature/enhancement) | 3 days |
+| P3 (docs/chore) | 7 days |
+
+## Getting Help
+
+- **GitHub Issues:** Bug reports and feature requests
+- **CLAUDE.md** in the repo root: Architecture overview and key patterns
+- **README.md**: Quick start guide and tool reference
 
 ## License
 

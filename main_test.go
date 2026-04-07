@@ -149,7 +149,7 @@ func TestSessionLifecycle(t *testing.T) {
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
 		killReq := makeReq(map[string]any{"name": sessName})
-		killTd.Handler(context.Background(), killReq)
+		_, _ = killTd.Handler(context.Background(), killReq)
 	}()
 
 	// List sessions — should include our session
@@ -291,7 +291,7 @@ func TestCapturePane_DefaultLines(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	td := findTool(t, "tmux_capture_pane")
@@ -361,7 +361,7 @@ func TestWorkspace_MultiPane(t *testing.T) {
 
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	var out WorkspaceOutput
@@ -505,16 +505,16 @@ func TestWaitForText_Found(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	// Send text then wait for it — use a single send_keys with Enter included
 	sendTd := findTool(t, "tmux_send_keys")
-	sendTd.Handler(context.Background(), makeReq(map[string]any{
+	_, _ = sendTd.Handler(context.Background(), makeReq(map[string]any{
 		"session": sessName,
 		"keys":    "echo MARKER_FOUND_XYZ",
 	}))
-	sendTd.Handler(context.Background(), makeReq(map[string]any{
+	_, _ = sendTd.Handler(context.Background(), makeReq(map[string]any{
 		"session": sessName,
 		"keys":    "Enter",
 	}))
@@ -577,16 +577,16 @@ func TestSearchPanes_Found(t *testing.T) {
 	}
 	defer func() {
 		killTd := findTool(t, "tmux_kill_session")
-		killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
+		_, _ = killTd.Handler(context.Background(), makeReq(map[string]any{"name": sessName}))
 	}()
 
 	// Send identifiable text
 	sendTd := findTool(t, "tmux_send_keys")
-	sendTd.Handler(context.Background(), makeReq(map[string]any{
+	_, _ = sendTd.Handler(context.Background(), makeReq(map[string]any{
 		"session": sessName,
 		"keys":    "echo SEARCH_MARKER_ABC123",
 	}))
-	sendTd.Handler(context.Background(), makeReq(map[string]any{
+	_, _ = sendTd.Handler(context.Background(), makeReq(map[string]any{
 		"session": sessName,
 		"keys":    "Enter",
 	}))

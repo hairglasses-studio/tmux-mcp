@@ -8,6 +8,8 @@
 
 MCP server for tmux session, window, and pane management. Gives AI assistants the ability to create terminal workspaces, send commands, and capture output — including a declarative workspace tool that sets up multi-pane layouts in a single call.
 
+Canonical development lives in [`hairglasses-studio/dotfiles`](https://github.com/hairglasses-studio/dotfiles/tree/main/mcp/tmux-mcp) under `dotfiles/mcp/tmux-mcp`. The standalone [`tmux-mcp`](https://github.com/hairglasses-studio/tmux-mcp) repo is a publish mirror kept in parity for installation and discovery.
+
 Built with [mcpkit](https://github.com/hairglasses-studio/mcpkit) using stdio transport.
 
 ## Install
