@@ -841,7 +841,7 @@ func main() {
 		Level: slog.LevelInfo,
 	})).With("service", "tmux-mcp"))
 
-	slog.Info("server starting", "name", "tmux-mcp", "version", "1.0.0")
+	slog.Info("server starting", "name", "tmux-mcp", "version", "1.2.0")
 
 	reg := registry.NewToolRegistry(registry.Config{
 		Middleware: []registry.Middleware{
@@ -853,7 +853,7 @@ func main() {
 	reg.RegisterModule(mod)
 	slog.Info("tools registered", "module", mod.Name(), "count", len(mod.Tools()))
 
-	s := registry.NewMCPServer("tmux-mcp", "1.0.0")
+	s := registry.NewMCPServer("tmux-mcp", "1.2.0")
 	reg.RegisterWithServer(s)
 	buildTmuxResourceRegistry().RegisterWithServer(s)
 	buildTmuxPromptRegistry().RegisterWithServer(s)
