@@ -18,4 +18,3 @@ go install .
 - Graceful handling of "no server running" -- list operations return empty arrays
 - Target strings built as `session:window.pane` with optional window/pane components
 - All sessions created detached (`-d` flag)
-
