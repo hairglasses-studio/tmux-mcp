@@ -70,7 +70,7 @@ Add to your MCP client config (for example Codex or Claude Code):
 |------|-------------|
 | `tmux_workspace` | Create a multi-window, multi-pane workspace from a declarative spec |
 
-## Declarative Workspace
+## Usage Examples
 
 The `tmux_workspace` tool replaces sequences of `new_session` + `new_window` + `send_keys` calls with a single declarative specification:
 
@@ -95,3 +95,4 @@ The `tmux_workspace` tool replaces sequences of `new_session` + `new_window` + `
 ## License
 
 MIT
+IT

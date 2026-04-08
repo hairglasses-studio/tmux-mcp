@@ -4,7 +4,7 @@
 // Usage:
 //
 //	tmux-mcp
-package main
+package tmux
 
 import (
 	"bytes"
@@ -833,10 +833,10 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 }
 
 // ---------------------------------------------------------------------------
-// main
+// Setup
 // ---------------------------------------------------------------------------
 
-func main() {
+func Setup() (*registry.ToolRegistry, *registry.MCPServer) {
 	slog.SetDefault(slog.New(slog.NewJSONHandler(os.Stderr, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	})).With("service", "tmux-mcp"))
@@ -858,8 +858,5 @@ func main() {
 	buildTmuxResourceRegistry().RegisterWithServer(s)
 	buildTmuxPromptRegistry().RegisterWithServer(s)
 
-	if err := registry.ServeAuto(s); err != nil {
-		slog.Error("server stopped", "error", err)
-		os.Exit(1)
-	}
+	return reg, s
 }
