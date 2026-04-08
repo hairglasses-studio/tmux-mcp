@@ -302,6 +302,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			return ListSessionsOutput{Sessions: sessions}, nil
 		},
 	)
+	listSessions.Category = "tmux"
 	listSessions.IsWrite = false
 
 	// ---------------------------------------------------------------
@@ -349,6 +350,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	listWindows.Category = "tmux"
 	listWindows.IsWrite = false
 
 	// ---------------------------------------------------------------
@@ -398,6 +400,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	listPanes.Category = "tmux"
 	listPanes.IsWrite = false
 
 	// ---------------------------------------------------------------
@@ -423,6 +426,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	capturePane.Category = "tmux"
 	capturePane.IsWrite = false
 	capturePane.SearchTerms = []string{"scrollback", "pane output", "terminal output", "copy pane"}
 	capturePane.MaxResultChars = 8000
@@ -447,6 +451,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	sendKeys.Category = "tmux"
 	sendKeys.IsWrite = true
 
 	// ---------------------------------------------------------------
@@ -476,6 +481,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	newSession.Category = "tmux"
 	newSession.IsWrite = true
 
 	// ---------------------------------------------------------------
@@ -502,6 +508,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	newWindow.Category = "tmux"
 	newWindow.IsWrite = true
 
 	// ---------------------------------------------------------------
@@ -524,6 +531,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	killSession.Category = "tmux"
 	killSession.IsWrite = true
 	killSession.Complexity = registry.ComplexityComplex
 
@@ -589,6 +597,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}
 		},
 	)
+	waitForText.Category = "tmux"
 	waitForText.IsWrite = false
 
 	// ---------------------------------------------------------------
@@ -679,6 +688,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	searchPanes.Category = "tmux"
 	searchPanes.IsWrite = false
 	searchPanes.SearchTerms = []string{"grep panes", "find in panes", "search session output"}
 
@@ -815,6 +825,7 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 			}, nil
 		},
 	)
+	workspace.Category = "tmux"
 	workspace.IsWrite = true
 
 	return []registry.ToolDefinition{
