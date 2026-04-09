@@ -23,3 +23,29 @@ All tools functional and tested. MIT licensed, README and CLAUDE.md in place.
 - SSE transport for real-time pane output streaming
 - Integration with tmux hooks for event-driven notifications
 - Workspace persistence across tmux server restarts (complement tmux-resurrect)
+
+<!-- whiteclaw-rollout:start -->
+## Whiteclaw-Derived Overhaul (2026-04-08)
+
+This tranche applies the highest-value whiteclaw findings that fit this repo's real surface: engineer briefs, bounded skills/runbooks, searchable provenance, scoped MCP packaging, and explicit verification ladders.
+
+### Strategic Focus
+- Treat this repo as a public mirror with a user-facing terminal contract, not just a generic mirror shell.
+- Use whiteclaw patterns to make the exported tmux workspace/wait surfaces easy to understand and safe to verify.
+- Keep source-of-truth and release parity explicit so mirror maintenance stays mechanical.
+
+### Recommended Work
+- [ ] [Mirror contract] Keep the canonical-source mapping to `dotfiles/mcp/tmux-mcp` explicit and verifiable.
+- [ ] [Schema/examples] Snapshot and document the exported `tmux_workspace`, `tmux_wait_for_text`, and related surface contracts.
+- [ ] [Compatibility tests] Add smoke tests for 'no tmux server running' and other common compatibility paths.
+- [ ] [Publish verification] Add mirror smoke tests that prove the released artifact matches the canonical source surface.
+
+### Rationale Snapshot
+- Tier / lifecycle: `standalone` / `publish-mirror`
+- Language profile: `Go`
+- Visibility / sensitivity: `PUBLIC` / `public`
+- Surface baseline: AGENTS=yes, skills=yes, codex=yes, mcp_manifest=configured, ralph=yes, roadmap=yes
+- Whiteclaw transfers in scope: mirror contract, schema/examples, compatibility smoke tests, publish verification
+- Live repo notes: AGENTS, skills, Codex config, configured .mcp.json, .ralph, 1 workflow(s)
+
+<!-- whiteclaw-rollout:end -->
