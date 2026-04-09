@@ -24,7 +24,8 @@ Or build from source:
 ```bash
 git clone https://github.com/hairglasses-studio/tmux-mcp
 cd tmux-mcp
-go build -o tmux-mcp .
+make build
+make check
 ```
 
 ## Configure
@@ -40,6 +41,10 @@ Add to your MCP client config (for example Codex or Claude Code):
   }
 }
 ```
+
+For a local checkout, the repo now also ships `.mcp.json` plus a repo-local
+launcher script so MCP clients can attach directly without reconstructing the
+command manually.
 
 ## Tools
 
@@ -95,4 +100,3 @@ The `tmux_workspace` tool replaces sequences of `new_session` + `new_window` + `
 ## License
 
 MIT
-IT

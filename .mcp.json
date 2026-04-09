@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "tmux-mcp": {
+      "command": "bash",
+      "args": ["./scripts/run-tmux-mcp.sh"],
+      "cwd": "."
+    }
+  }
+}
