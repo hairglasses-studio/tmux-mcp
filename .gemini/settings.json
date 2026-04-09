@@ -6,5 +6,18 @@
       "GEMINI.md"
     ]
   },
-  "mcpServers": {}
+  "mcp": {
+    "allowed": [
+      "tmux-mcp"
+    ]
+  },
+  "mcpServers": {
+    "tmux-mcp": {
+      "args": [
+        "./scripts/run-tmux-mcp.sh"
+      ],
+      "command": "bash",
+      "cwd": "."
+    }
+  }
 }
