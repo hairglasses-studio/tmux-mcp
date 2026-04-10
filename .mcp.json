@@ -2,8 +2,7 @@
   "mcpServers": {
     "tmux-mcp": {
       "command": "bash",
-      "args": ["./scripts/run-tmux-mcp.sh"],
-      "cwd": "."
+      "args": ["-lc", "exec ./scripts/run-tmux-mcp.sh"]
     }
   }
 }
