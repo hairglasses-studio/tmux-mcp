@@ -14,10 +14,10 @@
   "mcpServers": {
     "tmux-mcp": {
       "args": [
-        "./scripts/run-tmux-mcp.sh"
+        "-lc",
+        "exec ./scripts/run-tmux-mcp.sh"
       ],
-      "command": "bash",
-      "cwd": "."
+      "command": "bash"
     }
   }
 }
