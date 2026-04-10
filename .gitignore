@@ -18,7 +18,7 @@
 !.env.*.example
 
 # Build artifacts
-tmux-mcp
+/tmux-mcp
 coverage.out
 cov.out
 
