@@ -220,4 +220,3 @@ func TestNewWindow_WithNameAndCommand(t *testing.T) {
 		t.Errorf("session = %q, want %q", out.Session, sessName)
 	}
 }
-
