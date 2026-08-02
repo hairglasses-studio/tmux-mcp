@@ -1,1 +1,0 @@
-../../docs/fleet/canonical/copilot-instructions.md

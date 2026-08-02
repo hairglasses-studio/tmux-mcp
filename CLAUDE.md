@@ -5,7 +5,7 @@ This repo uses [AGENTS.md](AGENTS.md) as the canonical instruction file. Read it
 ## Claude Notes
 
 - Use [AGENTS.md](AGENTS.md) for build, test, architecture, and repo-specific conventions.
-- Keep [CLAUDE.md](CLAUDE.md), [GEMINI.md](GEMINI.md), and `.github/copilot-instructions.md` as thin compatibility mirrors.
+- Keep [CLAUDE.md](CLAUDE.md) as the only provider-specific compatibility mirror; Codex and AGY read `AGENTS.md` directly.
 - Add Claude-specific memory or workflow notes here only when they cannot live in [AGENTS.md](AGENTS.md).
 
 ## Summary
