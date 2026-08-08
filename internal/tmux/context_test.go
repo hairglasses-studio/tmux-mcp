@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/mark3labs/mcp-go/mcp"
+	"github.com/hairglasses-studio/mcpkit/resources"
 )
 
 // ---------------------------------------------------------------------------
@@ -23,36 +23,31 @@ func TestTmuxResourceModule_Metadata(t *testing.T) {
 
 func TestTmuxResourceModule_Resources(t *testing.T) {
 	m := &tmuxResourceModule{}
-	resources := m.Resources()
-	if len(resources) != 1 {
-		t.Fatalf("expected 1 resource, got %d", len(resources))
+	defs := m.Resources()
+	if len(defs) != 1 {
+		t.Fatalf("expected 1 resource, got %d", len(defs))
 	}
 
-	rd := resources[0]
+	rd := defs[0]
 	if rd.Category != "workflow" {
 		t.Errorf("Category = %q, want %q", rd.Category, "workflow")
 	}
 	if len(rd.Tags) == 0 {
 		t.Error("expected tags")
 	}
+	if rd.Resource.URI != "tmux://workflows/session-debug" {
+		t.Errorf("URI = %q, want %q", rd.Resource.URI, "tmux://workflows/session-debug")
+	}
 
-	// Call the handler
-	contents, err := rd.Handler(context.Background(), mcp.ReadResourceRequest{})
+	mimeType, text, err := resources.CallHandlerText(context.Background(), rd.Handler, "tmux://workflows/session-debug")
 	if err != nil {
 		t.Fatalf("handler error: %v", err)
 	}
-	if len(contents) != 1 {
-		t.Fatalf("expected 1 content, got %d", len(contents))
+	if mimeType != "text/markdown" {
+		t.Errorf("mimeType = %q, want %q", mimeType, "text/markdown")
 	}
-	tc, ok := contents[0].(mcp.TextResourceContents)
-	if !ok {
-		t.Fatalf("expected TextResourceContents, got %T", contents[0])
-	}
-	if tc.Text == "" {
+	if text == "" {
 		t.Error("resource text is empty")
-	}
-	if tc.URI != "tmux://workflows/session-debug" {
-		t.Errorf("URI = %q, want %q", tc.URI, "tmux://workflows/session-debug")
 	}
 }
 
@@ -79,12 +74,12 @@ func TestTmuxPromptModule_Metadata(t *testing.T) {
 
 func TestTmuxPromptModule_Prompts(t *testing.T) {
 	m := &tmuxPromptModule{}
-	prompts := m.Prompts()
-	if len(prompts) != 1 {
-		t.Fatalf("expected 1 prompt, got %d", len(prompts))
+	defs := m.Prompts()
+	if len(defs) != 1 {
+		t.Fatalf("expected 1 prompt, got %d", len(defs))
 	}
 
-	pd := prompts[0]
+	pd := defs[0]
 	if pd.Category != "workflow" {
 		t.Errorf("Category = %q, want %q", pd.Category, "workflow")
 	}
@@ -94,13 +89,10 @@ func TestTmuxPrompt_Handler(t *testing.T) {
 	m := &tmuxPromptModule{}
 	pd := m.Prompts()[0]
 
-	req := mcp.GetPromptRequest{}
-	req.Params.Arguments = map[string]string{
+	result, err := callPrompt(pd.Handler, map[string]string{
 		"session": "test-session",
 		"goal":    "check logs",
-	}
-
-	result, err := pd.Handler(context.Background(), req)
+	})
 	if err != nil {
 		t.Fatalf("handler error: %v", err)
 	}
@@ -116,19 +108,15 @@ func TestTmuxPrompt_DefaultGoal(t *testing.T) {
 	m := &tmuxPromptModule{}
 	pd := m.Prompts()[0]
 
-	req := mcp.GetPromptRequest{}
-	req.Params.Arguments = map[string]string{
+	result, err := callPrompt(pd.Handler, map[string]string{
 		"session": "test-session",
-	}
-
-	result, err := pd.Handler(context.Background(), req)
+	})
 	if err != nil {
 		t.Fatalf("handler error: %v", err)
 	}
 	if result == nil {
 		t.Fatal("result is nil")
 	}
-	// Default goal should produce valid output
 	if len(result.Messages) != 1 {
 		t.Fatalf("expected 1 message, got %d", len(result.Messages))
 	}

@@ -400,25 +400,27 @@ func findTool(t *testing.T, name string) registry.ToolDefinition {
 	return registry.ToolDefinition{}
 }
 
+// makeReq/extractText go through mcpkit's registry.NewCallToolRequest /
+// mcptest.ExtractText compat helpers instead of a zero-value-then-field-write
+// CallToolRequest and a raw registry.TextContent type assertion: the official
+// SDK's Params is a nilable pointer (zero-value + field write panics) and its
+// TextContent is pointer-typed (the value-typed assertion below fails to
+// compile), so this must go through the SDK-neutral accessors to build once
+// for both build tags.
 func makeReq(args map[string]any) registry.CallToolRequest {
-	req := registry.CallToolRequest{}
 	if args == nil {
 		args = map[string]any{}
 	}
-	req.Params.Arguments = args
+	req, err := registry.NewCallToolRequest("", args)
+	if err != nil {
+		panic("makeReq: " + err.Error())
+	}
 	return req
 }
 
 func extractText(t *testing.T, result *registry.CallToolResult) string {
 	t.Helper()
-	if len(result.Content) == 0 {
-		t.Fatal("result has no content")
-	}
-	tc, ok := result.Content[0].(registry.TextContent)
-	if !ok {
-		t.Fatalf("content is not TextContent, got %T", result.Content[0])
-	}
-	return tc.Text
+	return mcptest.ExtractText(t, result)
 }
 
 func unmarshalResult(t *testing.T, result *registry.CallToolResult, out any) {
