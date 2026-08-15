@@ -19,8 +19,10 @@
 
 # Build artifacts
 /tmux-mcp
+/tmux-mcp-legacy
 coverage.out
 cov.out
+
 
 # IDE
 .vscode/
