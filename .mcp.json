@@ -5,7 +5,7 @@
       "args": [
         "bash",
         "-lc",
-        "exec go run ./cmd/tmux-mcp"
+        "exec scripts/run-tmux-mcp.sh"
       ]
     }
   }

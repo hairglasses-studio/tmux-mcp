@@ -6,4 +6,16 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
 cd "$REPO_ROOT"
 export GOWORK=off
-exec go run ./cmd/tmux-mcp
+
+case "${TMUX_MCP_SDK:-official}" in
+  official)
+    exec go run -tags=official_sdk ./cmd/tmux-mcp
+    ;;
+  legacy)
+    exec go run ./cmd/tmux-mcp
+    ;;
+  *)
+    printf 'unsupported TMUX_MCP_SDK=%q (expected official or legacy)\n' "$TMUX_MCP_SDK" >&2
+    exit 2
+    ;;
+esac
