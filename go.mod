@@ -3,7 +3,7 @@ module github.com/hairglasses-studio/tmux-mcp
 go 1.26.1
 
 require (
-	github.com/hairglasses-studio/mcpkit v0.8.0
+	github.com/hairglasses-studio/mcpkit v0.8.2
 	github.com/mark3labs/mcp-go v0.54.0
 	github.com/modelcontextprotocol/go-sdk v1.7.0
 )
