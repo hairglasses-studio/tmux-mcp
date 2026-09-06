@@ -40,6 +40,8 @@ lint-legacy:
 
 check: build vet test
 
+ci: check
+
 check-legacy: build-legacy vet-legacy test-legacy
 
 check-all: check check-legacy
