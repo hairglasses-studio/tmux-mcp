@@ -382,6 +382,9 @@ func TestWorkspace_MultiPane(t *testing.T) {
 // ---------------------------------------------------------------------------
 
 func requireTmux(t *testing.T) {
+	// Tests own every pane they create; opt in to the send-keys guard
+	// (2026-09-06 echo-storm rule) so typing into test shells is allowed.
+	t.Setenv("FLEET_TMUX_SHELL_OK", "1")
 	t.Helper()
 	if _, err := exec.LookPath("tmux"); err != nil {
 		t.Skip("tmux not available")

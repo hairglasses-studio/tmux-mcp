@@ -437,9 +437,13 @@ func (m *TmuxModule) Tools() []registry.ToolDefinition {
 	// ---------------------------------------------------------------
 	sendKeys := handler.TypedHandler[SendKeysInput, SendKeysOutput](
 		"tmux_send_keys",
-		"Send keystrokes to a tmux pane. Keys can be literal text or tmux key names like Enter, C-c, etc.",
+		"Send keystrokes to a tmux pane whose foreground command is an agent runtime (node/cline/claude/codex/gemini/agy). Refused for shell/interpreter panes unless FLEET_TMUX_SHELL_OK=1 or the pane option @accept_shell_injection=1 (2026-09-06 echo-storm guard); use tmux display-message for notices. Keys can be literal text or tmux key names like Enter, C-c, etc.",
 		func(_ context.Context, input SendKeysInput) (SendKeysOutput, error) {
 			target := tmuxTarget(input.Session, input.Window, input.Pane)
+			if ok, why := sendKeysAllowed(target, runTmux); !ok {
+				slog.Warn("send keys refused", "target", target, "reason", why)
+				return SendKeysOutput{}, fmt.Errorf("[%s] send keys: %s", handler.ErrInvalidParam, why)
+			}
 			slog.Info("sending keys", "target", target, "keys", input.Keys)
 			_, err := runTmux("send-keys", "-t", target, input.Keys)
 			if err != nil {
